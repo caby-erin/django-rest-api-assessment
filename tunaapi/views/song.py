@@ -1,7 +1,7 @@
 from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from tunaapi.models import Song, Artist, SongGenre
+from tunaapi.models import Song, Artist, Genre
 from rest_framework import serializers, status
 
 class SongView(ViewSet):
@@ -22,7 +22,7 @@ class SongView(ViewSet):
       selected_genre = selected_genre.filter(genres__genre_id__id=selected_genre)
       
     serializer = SongSerializer(songs, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
   
   def create(self, request):
     artist_id = Artist.objects.get(pk=request.data["artistId"])
@@ -34,7 +34,7 @@ class SongView(ViewSet):
       length=request.data["length"],
     )
     serializer = SongSerializer(song)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
   
   def destroy(self, request, pk):
     """Handle DELETE request for an artist"""
@@ -51,7 +51,8 @@ class SongView(ViewSet):
     song.artist_id = artist_id
     song.save()
     
-    return Response(None, status=status.HTTP_200_OK)
+    serializer = SongSerializer(song)
+    return Response(serializer.data, status=status.HTTP_200_OK)
   
 class SongSerializer(serializers.ModelSerializer):
   class Meta:
@@ -59,14 +60,14 @@ class SongSerializer(serializers.ModelSerializer):
     fields = ('id', 'title', 'album', 'artist_id', 'length')
 
 
-class SongGenreSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
   class Meta:
-    model = SongGenre
-    fields = ( 'genre_id', )
+    model = Genre
+    fields = ( 'id', 'description')
     depth = 1
   
 class AllInfoSongSerializer(serializers.ModelSerializer):
-  genres = SongGenreSerializer(many=True, read_only=True)
+  genres = GenreSerializer(many=True, read_only=True)
   class Meta:
     model = Song
     fields = ('id', 'title', 'album', 'artist_id', 'length', 'genres')
