@@ -20,7 +20,7 @@ class GenreView(ViewSet):
       description=request.data["description"]
     )
     serializer = GenreSerializer(genre)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
   
   def destroy(self, request, pk):
     genre = Genre.objects.get(pk=pk)
@@ -32,14 +32,15 @@ class GenreView(ViewSet):
     genre.description = request.data["description"]
     genre.save()
     
-    return Response(None, status=status.HTTP_200_OK)
+    serializer = GenreSerializer(genre)
+    return Response(serializer.data, status=status.HTTP_200_OK)
   
-class SongGenreSerializer(serializers.ModelSerializer):
+class SongSerializer(serializers.ModelSerializer):
   """JSON serializer for Song Genre"""
   class Meta:
-    model = SongGenre
-    fields = ( 'song_id', )
-    depth = 1
+    model = Song
+    fields = ( 'id', 'title', 'artist_id', 'album', 'length')
+    depth = 0
   
 class GenreSerializer(serializers.ModelSerializer):
   class Meta:
@@ -48,7 +49,7 @@ class GenreSerializer(serializers.ModelSerializer):
     depth = 1
 
 class AllInfoGenreSerializer(serializers.ModelSerializer):
-  songs = SongGenreSerializer(many=True, read_only=True)
+  songs = SongSerializer(many=True, read_only=True)
   class Meta:
     model = Genre
     fields = ('id', 'description', 'songs')

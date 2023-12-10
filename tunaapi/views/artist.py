@@ -11,7 +11,7 @@ class ArtistView(ViewSet):
     try:
       artist = Artist.objects.annotate(song_count=Count('songs')).get(pk=pk)
       serializer = AllInfoArtistSerializer(artist)
-      return Response(serializer.data)
+      return Response(serializer.data, status=status.HTTP_200_OK)
     
     except Artist.DoesNotExist as ex:
       return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
@@ -20,7 +20,7 @@ class ArtistView(ViewSet):
     artists = Artist.objects.all()
       
     serializer = ArtistSerializer(artists, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
   
   def create (self, request):
     artist = Artist.objects.create(
@@ -44,7 +44,8 @@ class ArtistView(ViewSet):
     artist.bio=request.data["bio"]
     artist.save()
     
-    return Response(None, status=status.HTTP_200_OK)
+    serializer = ArtistSerializer(artist)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ArtistSerializer(serializers.ModelSerializer):
   class Meta:
